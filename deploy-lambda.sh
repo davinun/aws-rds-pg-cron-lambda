@@ -1,13 +1,15 @@
 #!/bin/bash
 
+# Build a ZIP with all the sources of the Lambda
+mkdir -p target
 cd src
+zip -r9 ../target/pg_cron_lambda.zip .
 
-zip -r9 ../pg_cron_lambda.zip .
-
+# Upload the Lambda ZIP to S3
 cd ..
+aws s3 cp ./target/pg_cron_lambda.zip s3://dror-avinun-bucket/pg_cron_lambda.zip
 
-aws s3 cp pg_cron_lambda.zip s3://dror-avinun-bucket/pg_cron_lambda.zip
-
+# Create the CloudFormation Stack to create the Lambda and all relevant resources
 aws cloudformation create-stack --stack-name drordel23 \
 --template-body file://./cloudformation/rds_cron_lambda_cf.json \
 --parameters \
