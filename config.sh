@@ -1,0 +1,15 @@
+aws_region="eu-central-1"
+s3_bucket="dror-avinun-bucket"
+s3_key="pg_cron_lambda.zip"
+
+my_prefix="drordel43"
+my_vpc="vpc-0b0fa98e6f5394a83"
+my_subnets="subnet-06fbcaf35b65cd731\\,subnet-0a77a9930f159ffb6"
+my_db_endpoint="myrds.example.com"
+my_db_port="5432"
+my_database="mydb"
+my_dbuser="mydbuser"
+my_dbpassword="mydbpassword"
+
+tag_owner="Dror Avinun"
+tag_team="Architects"

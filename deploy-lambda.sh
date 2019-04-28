@@ -1,27 +1,37 @@
 #!/bin/bash
 
-# Build a ZIP with all the sources of the Lambda
+echo "Loading configurations..."
+. config.sh
+
+
+echo "Creating the S3 bucket for the lambda ZIP..."
+aws s3api create-bucket --bucket $s3_bucket --region $aws_region --create-bucket-configuration LocationConstraint=$aws_region
+
+echo "Building a ZIP with all the sources of the Lambda..."
 mkdir -p target
 cd src
-zip -r9 ../target/pg_cron_lambda.zip .
+zip -r9 ../target/$s3_key .
 
-# Upload the Lambda ZIP to S3
+echo "Uploading the Lambda ZIP to S3"
 cd ..
-aws s3 cp ./target/pg_cron_lambda.zip s3://dror-avinun-bucket/pg_cron_lambda.zip
+aws s3 cp ./target/$s3_key s3://$s3_bucket/$s3_key
 
-# Create the CloudFormation Stack to create the Lambda and all relevant resources
-aws cloudformation create-stack --stack-name drordel23 \
+echo "Creating the CloudFormation Stack to create the Lambda and all relevant resources..."
+aws cloudformation create-stack --stack-name $my_prefix \
 --template-body file://./cloudformation/rds_cron_lambda_cf.json \
 --parameters \
-ParameterKey=Prefix,ParameterValue=drordel23 \
-ParameterKey=VpcId,ParameterValue=vpc-0b0fa98e6f5394a83 \
-ParameterKey=Subnets,ParameterValue=subnet-06fbcaf35b65cd731\\,subnet-0a77a9930f159ffb6 \
-ParameterKey=S3Bucket,ParameterValue=dror-avinun-bucket \
-ParameterKey=S3Key,ParameterValue=pg_cron_lambda.zip \
-ParameterKey=DBENDPOINT,ParameterValue=myrds.example.com \
-ParameterKey=DBPORT,ParameterValue=5432 \
-ParameterKey=DATABASE,ParameterValue=dror \
-ParameterKey=DBUSER,ParameterValue=dror \
-ParameterKey=DBPASSWORD,ParameterValue=dror \
+ParameterKey=Prefix,ParameterValue=$my_prefix \
+ParameterKey=VpcId,ParameterValue=$my_vpc \
+ParameterKey=Subnets,ParameterValue=$my_subnets \
+ParameterKey=S3Bucket,ParameterValue=$s3_bucket \
+ParameterKey=S3Key,ParameterValue=$s3_key \
+ParameterKey=DBENDPOINT,ParameterValue=$my_db_endpoint \
+ParameterKey=DBPORT,ParameterValue=$my_db_port \
+ParameterKey=DATABASE,ParameterValue=$my_database \
+ParameterKey=DBUSER,ParameterValue=$my_dbuser \
+ParameterKey=DBPASSWORD,ParameterValue=$my_dbpassword \
+--tags \
+Key=Owner,Value="$tag_owner" \
+Key=Team,Value=$tag_team \
 --capabilities CAPABILITY_NAMED_IAM
 
