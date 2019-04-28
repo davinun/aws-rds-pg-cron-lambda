@@ -5,9 +5,9 @@ An AWS lambda to replace the PostgreSQL [pg_cron extension](https://github.com/c
 AWS Postgres RDS does not support pg_cron.
 [pg_cron](https://github.com/citusdata/pg_cron) is a simple cron-based job scheduler for PostgreSQL (9.5 or higher) that runs inside the database as an extension. It uses the same syntax as regular cron, but it allows you to schedule PostgreSQL commands directly from the database.
 
-The Lambda should run in the same VPC / subnets as the RDS DB
-The Lambda will be invoked by CloudWatch event every hour (todo - add flexible scheduling)
-The Lambda will connect to the RDS DB and execute a set of queries
+- The Lambda should run in the same VPC / subnets as the RDS DB
+- The Lambda will be invoked by CloudWatch event every hour (todo - add flexible scheduling)
+- The Lambda will connect to the RDS DB and execute a set of queries
 
 ## Deploying the Lambda
 Prepare:
