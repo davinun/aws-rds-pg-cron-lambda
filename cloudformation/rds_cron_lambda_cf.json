@@ -1,0 +1,249 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Metadata" : {
+    "AWS::CloudFormation::Interface" : {
+      "ParameterGroups" : [
+        {
+          "Label": {"default" : "SWM PG-Cron Lambda configuration"},
+          "Parameters": ["Prefix", "VpcId", "Subnets", "S3Bucket", "S3Key"]
+        },
+        {
+          "Label": {"default" : "SWM PG-Cron Lambda Environment Variables"},
+          "Parameters": ["DBENDPOINT", "DBPORT", "DATABASE", "DBUSER", "DBPASSWORD"]
+        }
+      ],
+      "ParameterLabels" : []
+    }
+  },
+  "Parameters" : {
+    "Prefix": {
+      "Type": "String",
+      "MinLength" : "1",
+      "MaxLength" : "10",
+      "AllowedPattern" : "^[a-zA-Z0-9]*$",
+      "Description": "Give a prefix to the name of all the resources in this stack",
+      "ConstraintDescription": "Max 10 characters. Use letters and numbers only"
+    },
+    "VpcId": {
+      "Type": "AWS::EC2::VPC::Id",
+      "Description": "VpcId where your RDS is running",
+      "ConstraintDescription": "Must be the VPC Id of an existing Virtual Private Cloud."
+    },
+    "Subnets": {
+      "Type": "List<AWS::EC2::Subnet::Id>",
+      "Description": "The list of SubnetIds in your VPC where the RDS is running",
+      "ConstraintDescription": "must be a list of at least two existing subnets where your RDS is running"
+    },
+    "S3Bucket": {
+      "Type": "String",
+      "MinLength" : "1",
+      "MaxLength" : "100",
+      "Default" : "dror-avinun-bucket",
+      "Description": "An S3 Bucket name where the ZIP with the Lambda code resides",
+      "ConstraintDescription": "Put just the name of the bucket - NOT the full URL)"
+    },
+    "S3Key": {
+      "Type": "String",
+      "MinLength" : "1",
+      "MaxLength" : "100",
+      "Default" : "pg_cron_lambda.zip",
+      "Description": "The name of the ZIP with the Lambda code",
+      "ConstraintDescription": "The name of the ZIP with the Lambda code - NOT the full URL)"
+    },
+    "DATABASE": {
+      "Type": "String",
+      "MinLength" : "1",
+      "MaxLength" : "100",
+      "Description": "The name of the RDS DB",
+      "ConstraintDescription": "The name of the RDS DB"
+    },
+    "DBUSER": {
+      "Type": "String",
+      "MinLength" : "1",
+      "MaxLength" : "100",
+      "Description": "The SWM user of the RDS DB",
+      "ConstraintDescription": "The SWM user of the RDS DB"
+    },
+    "DBPASSWORD": {
+      "Type": "String",
+      "MinLength" : "1",
+      "MaxLength" : "100",
+      "Description": "The password to the RDS DB",
+      "ConstraintDescription": "The password to the RDS DB"
+    },
+    "DBENDPOINT": {
+      "Type": "String",
+      "MinLength" : "1",
+      "MaxLength" : "256",
+      "Description": "The endpoint URL of the RDS DB",
+      "ConstraintDescription": "The endpoint URL of the RDS DB"
+    },
+    "DBPORT": {
+      "Type": "Number",
+      "Default" : 5432,
+      "Description": "The port of the RDS DB (Default: 5432)",
+      "ConstraintDescription": "The port of the RDS DB"
+    }
+  },
+  "Resources": {
+    "LambdaSg": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": {
+          "Fn::Join": [
+            "_",
+            [
+              {
+                "Ref": "Prefix"
+              },
+              "cron_rds_lambda_sg"
+            ]
+          ]
+        },
+        "GroupDescription": {
+          "Fn::Join": [
+            ":",
+            [
+              {
+                "Ref": "Prefix"
+              },
+              " A security group for pg_cron lambda"
+            ]
+          ]
+        },
+        "VpcId": {
+          "Ref": "VpcId"
+        }
+      }
+    },
+    "LambdaRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": {
+          "Fn::Join": [
+            "_",
+            [
+              {
+                "Ref": "Prefix"
+              },
+              "cron_rds_lambda_role"
+            ]
+          ]
+        },
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": {
+              "Fn::Join": [
+                "_",
+                [
+                  {
+                    "Ref": "Prefix"
+                  },
+                  "cron_rds_lambda_policy"
+                ]
+              ]
+            },
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents",
+                    "ec2:CreateNetworkInterface",
+                    "ec2:DescribeNetworkInterfaces",
+                    "ec2:DeleteNetworkInterface"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "logs:CreateLogGroup",
+                  "Resource": "arn:aws:logs:eu-central-1:524723326614:*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": [
+                    "arn:aws:logs:eu-central-1:524723326614:log-group:/aws/lambda/swmdb1_pg_cron_lambda:*"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "LambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Handler": "index.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "LambdaRole",
+            "Arn"
+          ]
+        },
+        "Code": {
+          "S3Bucket": { "Ref": "S3Bucket" },
+          "S3Key": { "Ref": "S3Key" }
+        },
+        "Runtime": "python2.7",
+        "Timeout": 300,
+        "MemorySize": 128,
+        "VpcConfig": {
+          "SecurityGroupIds": [{"Ref": "LambdaSg"}],
+          "SubnetIds": {"Ref": "Subnets"}
+        },
+        "Environment": {
+          "Variables": {
+            "DATABASE": { "Ref": "DATABASE" },
+            "DBPASSWORD": { "Ref": "DBPASSWORD" },
+            "DBUSER": { "Ref": "DBUSER" },
+            "ENDPOINT": { "Ref": "DBENDPOINT" },
+            "PORT": { "Ref": "DBPORT" },
+            "QUERY": "[{\"q\":\"SELECT MERGE_INTO_TERMINAL_ACTIVE()\"},{\"q\":\"SELECT REFRESH_TERMINAL_CNT()\"},{\"q\":\"SELECT CLEAN_PURGE_UPD_FILE_TRACK()\"}]"
+          }
+        },
+        "Description": "lambda which runs every hour and calls the postgres procedures (replacing pg_cron)"
+      }
+    },
+    "ScheduledRule": {
+      "Type": "AWS::Events::Rule",
+      "Properties": {
+        "ScheduleExpression": "rate(1 hour)",
+        "State": "ENABLED",
+        "Targets": [{
+            "Arn": { "Fn::GetAtt": ["LambdaFunction", "Arn"] },
+            "Id": "TargetFunctionV1"
+          }]
+      }
+    },
+    "PermissionForEventsToInvokeLambda": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": { "Ref": "LambdaFunction" },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "events.amazonaws.com",
+        "SourceArn": { "Fn::GetAtt": ["ScheduledRule", "Arn"] }
+      }
+    }
+  }
+}
