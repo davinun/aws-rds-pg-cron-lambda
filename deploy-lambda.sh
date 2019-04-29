@@ -3,7 +3,6 @@
 echo "Loading configurations..."
 . config.sh
 
-
 echo "Creating the S3 bucket for the lambda ZIP..."
 aws s3api create-bucket --bucket $s3_bucket --region $aws_region --create-bucket-configuration LocationConstraint=$aws_region
 
@@ -34,4 +33,9 @@ ParameterKey=DBPASSWORD,ParameterValue=$my_dbpassword \
 Key=Owner,Value="$tag_owner" \
 Key=Team,Value=$tag_team \
 --capabilities CAPABILITY_NAMED_IAM
+
+# todo - these parameters cause errors
+#ParameterKey=Schedule,ParameterValue=$my_schedule \
+#ParameterKey=DBQUERY,ParameterValue=$my_query \
+
 

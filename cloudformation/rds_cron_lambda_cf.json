@@ -5,11 +5,11 @@
       "ParameterGroups" : [
         {
           "Label": {"default" : "SWM PG-Cron Lambda configuration"},
-          "Parameters": ["Prefix", "VpcId", "Subnets", "S3Bucket", "S3Key"]
+          "Parameters": ["Prefix", "VpcId", "Subnets", "S3Bucket", "S3Key", "Schedule"]
         },
         {
           "Label": {"default" : "SWM PG-Cron Lambda Environment Variables"},
-          "Parameters": ["DBENDPOINT", "DBPORT", "DATABASE", "DBUSER", "DBPASSWORD"]
+          "Parameters": ["DBENDPOINT", "DBPORT", "DATABASE", "DBUSER", "DBPASSWORD", "DBQUERY"]
         }
       ],
       "ParameterLabels" : []
@@ -33,6 +33,14 @@
       "Type": "List<AWS::EC2::Subnet::Id>",
       "Description": "The list of SubnetIds in your VPC where the RDS is running",
       "ConstraintDescription": "must be a list of at least two existing subnets where your RDS is running"
+    },
+    "Schedule": {
+      "Type": "String",
+      "MinLength" : "1",
+      "MaxLength" : "100",
+      "Default" : "rate(1 hour)",
+      "Description": "An schedule expression for the Lambda - https://docs.aws.amazon.com/lambda/latest/dg/tutorial-scheduled-events-schedule-expressions.html",
+      "ConstraintDescription": "Use a schedule expression as defined in https://docs.aws.amazon.com/lambda/latest/dg/tutorial-scheduled-events-schedule-expressions.html"
     },
     "S3Bucket": {
       "Type": "String",
@@ -83,6 +91,12 @@
       "Default" : 5432,
       "Description": "The port of the RDS DB (Default: 5432)",
       "ConstraintDescription": "The port of the RDS DB"
+    },
+    "DBQUERY": {
+      "Type": "String",
+      "Default": "[{\"q\":\"SELECT MERGE_INTO_TERMINAL_ACTIVE()\"},{\"q\":\"SELECT REFRESH_TERMINAL_CNT()\"},{\"q\":\"SELECT CLEAN_PURGE_UPD_FILE_TRACK()\"}]",
+      "Description": "The queries that the Lambda should run",
+      "ConstraintDescription": "A JSON in the format [{\"q\":\"query-1...\"}, {\"q\":\"query-2...\"}...]"
     }
   },
   "Resources": {
@@ -219,7 +233,7 @@
             "DBUSER": { "Ref": "DBUSER" },
             "ENDPOINT": { "Ref": "DBENDPOINT" },
             "PORT": { "Ref": "DBPORT" },
-            "QUERY": "[{\"q\":\"SELECT MERGE_INTO_TERMINAL_ACTIVE()\"},{\"q\":\"SELECT REFRESH_TERMINAL_CNT()\"},{\"q\":\"SELECT CLEAN_PURGE_UPD_FILE_TRACK()\"}]"
+            "QUERY": {"Ref": "DBQUERY"}
           }
         },
         "Description": "lambda which runs every hour and calls the postgres procedures (replacing pg_cron)"
@@ -228,7 +242,7 @@
     "ScheduledRule": {
       "Type": "AWS::Events::Rule",
       "Properties": {
-        "ScheduleExpression": "rate(1 hour)",
+        "ScheduleExpression": {"Ref": "Schedule"},
         "State": "ENABLED",
         "Targets": [{
             "Arn": { "Fn::GetAtt": ["LambdaFunction", "Arn"] },
