@@ -19,23 +19,21 @@ echo "Creating the CloudFormation Stack to create the Lambda and all relevant re
 aws cloudformation create-stack --stack-name $my_prefix \
 --template-body file://./cloudformation/rds_cron_lambda_cf.json \
 --parameters \
-ParameterKey=Prefix,ParameterValue=$my_prefix \
-ParameterKey=VpcId,ParameterValue=$my_vpc \
-ParameterKey=Subnets,ParameterValue=$my_subnets \
-ParameterKey=S3Bucket,ParameterValue=$s3_bucket \
-ParameterKey=S3Key,ParameterValue=$s3_key \
-ParameterKey=DBENDPOINT,ParameterValue=$my_db_endpoint \
-ParameterKey=DBPORT,ParameterValue=$my_db_port \
-ParameterKey=DATABASE,ParameterValue=$my_database \
-ParameterKey=DBUSER,ParameterValue=$my_dbuser \
-ParameterKey=DBPASSWORD,ParameterValue=$my_dbpassword \
+ParameterKey=Prefix,ParameterValue="$my_prefix" \
+ParameterKey=VpcId,ParameterValue="$my_vpc" \
+ParameterKey=Subnets,ParameterValue="$my_subnets" \
+ParameterKey=Schedule,ParameterValue="$my_schedule" \
+ParameterKey=S3Bucket,ParameterValue="$s3_bucket" \
+ParameterKey=S3Key,ParameterValue="$s3_key" \
+ParameterKey=DBENDPOINT,ParameterValue="$my_db_endpoint" \
+ParameterKey=DBPORT,ParameterValue="$my_db_port" \
+ParameterKey=DATABASE,ParameterValue="$my_database" \
+ParameterKey=DBUSER,ParameterValue="$my_dbuser" \
+ParameterKey=DBPASSWORD,ParameterValue="$my_dbpassword" \
+ParameterKey=DBQUERY,ParameterValue="$my_query" \
 --tags \
 Key=Owner,Value="$tag_owner" \
-Key=Team,Value=$tag_team \
+Key=Team,Value="$tag_team" \
 --capabilities CAPABILITY_NAMED_IAM
-
-# todo - these parameters cause errors
-#ParameterKey=Schedule,ParameterValue=$my_schedule \
-#ParameterKey=DBQUERY,ParameterValue=$my_query \
 
 

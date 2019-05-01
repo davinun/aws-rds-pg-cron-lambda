@@ -6,7 +6,6 @@
 import psycopg2
 import logging
 import traceback
-import json
 from os import environ
 
 endpoint=environ.get('ENDPOINT')
@@ -39,10 +38,10 @@ logger.info("Cold start complete.")
 def handler(event,context):
 
     try:
-        queries = json.loads(queriesTmp)
+        queries = queriesTmp.split(',');
         logger.info(queries)
     except:
-        return log_err("ERROR: Cannot parse queries JSON.\n{}".format(
+        return log_err("ERROR: Cannot parse queries .\n{}".format(
             traceback.format_exc()))
     
     try:
@@ -50,8 +49,8 @@ def handler(event,context):
         cursor=cnx.cursor()
         for query in queries:
 			try:
-				logger.info(query['q'])
-				cursor.execute(query['q'])
+				logger.info(query)
+				cursor.execute(query)
 			except:
 				return log_err ("ERROR: Cannot execute cursor.\n{}".format(
 					traceback.format_exc()) )

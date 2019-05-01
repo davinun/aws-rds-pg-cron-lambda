@@ -94,9 +94,9 @@
     },
     "DBQUERY": {
       "Type": "String",
-      "Default": "[{\"q\":\"SELECT MERGE_INTO_TERMINAL_ACTIVE()\"},{\"q\":\"SELECT REFRESH_TERMINAL_CNT()\"},{\"q\":\"SELECT CLEAN_PURGE_UPD_FILE_TRACK()\"}]",
-      "Description": "The queries that the Lambda should run",
-      "ConstraintDescription": "A JSON in the format [{\"q\":\"query-1...\"}, {\"q\":\"query-2...\"}...]"
+      "Default": "SELECT MERGE_INTO_TERMINAL_ACTIVE(),SELECT REFRESH_TERMINAL_CNT(),SELECT CLEAN_PURGE_UPD_FILE_TRACK()",
+      "Description": "The comma separated list of queries that the Lambda should run",
+      "ConstraintDescription": "In the format \"query-1,query-2...\""
     }
   },
   "Resources": {
