@@ -9,6 +9,10 @@ The [pg_cron extension](https://github.com/citusdata/pg_cron) is a simple cron-b
 - The Lambda will be invoked by CloudWatch as defined in the "schedule" parameter (default: every 1 hour)
 - The Lambda will connect to the RDS DB and execute a set of queries
 
+## Pre-requisites
+- Install AWS CLI
+- clone / download this git repository
+
 ## Deploying the Lambda
 - Update the **config.sh** file with all the relevant parameters
 - run ./deploy-lambda.sh 

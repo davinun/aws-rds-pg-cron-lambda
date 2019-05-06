@@ -39,7 +39,7 @@
       "MinLength" : "1",
       "MaxLength" : "100",
       "Default" : "rate(1 hour)",
-      "Description": "An schedule expression for the Lambda - https://docs.aws.amazon.com/lambda/latest/dg/tutorial-scheduled-events-schedule-expressions.html",
+      "Description": "A schedule expression for the Lambda - https://docs.aws.amazon.com/lambda/latest/dg/tutorial-scheduled-events-schedule-expressions.html",
       "ConstraintDescription": "Use a schedule expression as defined in https://docs.aws.amazon.com/lambda/latest/dg/tutorial-scheduled-events-schedule-expressions.html"
     },
     "S3Bucket": {
