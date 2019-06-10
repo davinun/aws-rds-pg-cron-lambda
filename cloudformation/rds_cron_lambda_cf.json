@@ -187,7 +187,12 @@
                 {
                   "Effect": "Allow",
                   "Action": "logs:CreateLogGroup",
-                  "Resource": "arn:aws:logs:eu-central-1:524723326614:*"
+                  "Resource": {
+                    "Fn::Join": [
+                      "",["arn:aws:logs:",{"Ref": "AWS::Region"},":",{"Ref": "AWS::AccountId"},":*"]
+                    ]
+                  }
+
                 },
                 {
                   "Effect": "Allow",
@@ -196,7 +201,11 @@
                     "logs:PutLogEvents"
                   ],
                   "Resource": [
-                    "arn:aws:logs:eu-central-1:524723326614:log-group:/aws/lambda/swmdb1_pg_cron_lambda:*"
+                    {
+                      "Fn::Join": [
+                        "",["arn:aws:logs:",{"Ref": "AWS::Region"},":",{"Ref": "AWS::AccountId"},":log-group:/aws/lambda/",{"Ref": "Prefix"},"_pg_cron_lambda:*"]
+                      ]
+                    }
                   ]
                 }
               ]
