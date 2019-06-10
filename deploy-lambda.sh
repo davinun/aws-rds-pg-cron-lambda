@@ -15,6 +15,9 @@ echo "Uploading the Lambda ZIP to S3"
 cd ..
 aws s3 cp ./target/$s3_key s3://$s3_bucket/$s3_key
 
+echo "Uploading the CloudFormation template to S3"
+aws s3 cp ./cloudformation/rds_cron_lambda_cf.json s3://$s3_bucket/rds_cron_lambda_cf.json
+
 echo "Creating the CloudFormation Stack to create the Lambda and all relevant resources..."
 aws cloudformation create-stack --stack-name $my_prefix \
 --template-body file://./cloudformation/rds_cron_lambda_cf.json \

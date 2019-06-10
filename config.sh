@@ -3,7 +3,7 @@ aws_region="eu-central-1"
 
 # A bucket for the code of the lambda.
 # The installation script will automatically upload the lambda code to the bucket
-s3_bucket="dror-avinun-bucket"
+s3_bucket="aws-rds-pg-cron-lambda"
 s3_key="pg_cron_lambda.zip"
 
 # The name of the stack and a prefix to the name of all the resources in this stack
